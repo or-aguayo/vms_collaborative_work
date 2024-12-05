@@ -107,7 +107,7 @@ socket.on('sendInvitation', (data) => {
  // Unirse a un workspace
  const {getProjectByWorkspace } = require('./Services/WorkspaceService.js');
 
-socket.on('joinWorkspace', async (data) => {
+ socket.on('joinWorkspace', async (data) => {
     const { clientId, workspaceId } = data;
 
     socket.join(workspaceId);
@@ -127,25 +127,65 @@ socket.on('joinWorkspace', async (data) => {
         return;
     }
 
-    try {
-        const project = await getProjectByWorkspace(workspaceId);
+    // Si el proyecto ya existe en memoria, usarlo
+    if (workspaces[workspaceId]) {
+        console.log(`Sending existing project for workspace ${workspaceId} to client ${clientId}`);
+        io.to(socket.id).emit('replaceProject', {
+            clientId,
+            workspaceId,
+            project: workspaces[workspaceId],
+        });
+    } else {
+        // Si no existe, intenta cargarlo desde la base de datos
+        try {
+            const project = await getProjectByWorkspace(workspaceId);
 
-        if (!project) {
-            console.log(`No project found for workspace ${workspaceId}`);
-        } else {
-            console.log(`Project found for workspace ${workspaceId}:`, project);
-            io.to(socket.id).emit('replaceProject', {
-                clientId,
-                workspaceId,
-                project: project.project,
-            });
+            if (!project) {
+                console.log(`No project found for workspace ${workspaceId}`);
+            } else {
+                console.log(`Project found for workspace ${workspaceId}:`, project);
+                workspaces[workspaceId] = project.project; // Guardar en memoria
+                io.to(socket.id).emit('replaceProject', {
+                    clientId,
+                    workspaceId,
+                    project: project.project,
+                });
+            }
+        } catch (err) {
+            console.error('Error retrieving project for workspace:', err);
         }
-    } catch (err) {
-        console.error('Error retrieving project for workspace:', err);
     }
 
     io.to(socket.id).emit('workspaceJoined', { clientId, workspaceId });
 });
+
+socket.on('openProject', async (data) => {
+    const { workspaceId, projectId } = data;
+    console.log(`Opening project ${projectId} for workspace ${workspaceId}`);
+
+    try {
+        // Obtener el proyecto desde la base de datos
+        const project = await getProjectById(projectId);
+
+        if (!project) {
+            console.error(`Project ${projectId} not found`);
+            io.to(socket.id).emit('error', { message: 'Project not found' });
+            return;
+        }
+
+        // Guardar el proyecto en memoria asociado al workspaceId
+        workspaces[workspaceId] = project;
+
+        // Emitir el nuevo proyecto a todos los usuarios en el workspace
+        io.to(workspaceId).emit('projectOpened', { project });
+
+        console.log(`Project ${projectId} sent to workspace ${workspaceId}`);
+    } catch (err) {
+        console.error('Error opening project:', err);
+        io.to(socket.id).emit('error', { message: 'Failed to open project' });
+    }
+});
+
 
 const { checkWorkspaceExists, deleteExistingProject, insertProject } = require('./Services/ProjectService');
 
