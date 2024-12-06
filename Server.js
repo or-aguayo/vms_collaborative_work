@@ -211,7 +211,7 @@ socket.on('projectCreated', async (data) => {
 
         await deleteExistingProject(data.workspaceId);
         await insertProject(data.project.id, data.project, data.workspaceId);
-        io.to(data.workspaceId).emit('projectCreated', data);
+        socket.to(data.workspaceId).emit('projectCreated', data);
 
     } catch (err) {
         console.error('Error guardando el proyecto en la base de datos:', err);
@@ -249,7 +249,7 @@ socket.on('productLineCreated', async (data) => {
         await updateProject(data.projectId, projectJson);
         console.log(`ProductLine guardada en el proyecto: ${data.productLine.name}`);
 
-        io.to(data.workspaceId).emit('productLineCreated', data);
+        socket.to(data.workspaceId).emit('productLineCreated', data);
     } catch (err) {
         console.error('Error guardando la ProductLine en la base de datos:', err);
     }
@@ -287,7 +287,7 @@ socket.on('modelCreated', async (data) => {
       await updateProject(data.projectId, projectJson);
       console.log(`Modelo guardado en el proyecto: ${data.model.name}`);
 
-      io.to(data.workspaceId).emit('modelCreated', data);
+      socket.to(data.workspaceId).emit('modelCreated', data);
   } catch (err) {
       console.error('Error guardando el modelo en el proyecto:', err);
   }
@@ -318,7 +318,7 @@ socket.on('modelDeleted', async (data) => {
       await updateProject(data.projectId, projectJson);
       console.log(`Modelo eliminado del proyecto: ${data.modelId}`);
 
-      io.to(data.workspaceId).emit('modelDeleted', data);
+      socket.to(data.workspaceId).emit('modelDeleted', data);
   } catch (err) {
       console.error('Error eliminando el modelo en el proyecto:', err);
   }
@@ -353,7 +353,7 @@ socket.on('modelRenamed', async (data) => {
       await updateProject(data.projectId, projectJson);
       console.log(`Nombre del modelo actualizado en el proyecto: ${data.modelId}`);
 
-      io.to(data.workspaceId).emit('modelRenamed', data);
+      socket.to(data.workspaceId).emit('modelRenamed', data);
   } catch (err) {
       console.error('Error renombrando el modelo en el proyecto:', err);
   }
@@ -388,7 +388,7 @@ socket.on('modelConfigured', async (data) => {
       await updateProject(data.projectId, projectJson);
       console.log(`Configuración del modelo actualizada en el proyecto: ${data.modelId}`);
 
-      io.to(data.workspaceId).emit('modelConfigured', data);
+      socket.to(data.workspaceId).emit('modelConfigured', data);
   } catch (err) {
       console.error('Error configurando el modelo en el proyecto:', err);
   }
@@ -407,7 +407,7 @@ socket.on('cellMoved', async (data) => {
 
       await moveCell(projectJson, data.projectId, data.cellId, data.cell);
       console.log(`Celda movida en el proyecto: ${data.cellId}`);
-      io.to(data.workspaceId).emit('cellMoved', data);
+      socket.to(data.workspaceId).emit('cellMoved', data);
   } catch (err) {
       console.error('Error moviendo la celda en el proyecto:', err);
   }
@@ -426,7 +426,7 @@ socket.on('cellResized', async (data) => {
 
       await resizeCell(projectJson, data.projectId, data.cellId, data.cell);
       console.log(`Celda redimensionada en el proyecto: ${data.cellId}`);
-      io.to(data.workspaceId).emit('cellResized', data);
+      socket.to(data.workspaceId).emit('cellResized', data);
   } catch (err) {
       console.error('Error redimensionando la celda en el proyecto:', err);
   }
@@ -457,7 +457,7 @@ socket.on('cellAdded', async (data) => {
 
       await addCells(projectJson, data.projectId, data.modelId, newCells);
       console.log(`Celdas añadidas al modelo: ${data.modelId}`);
-      io.to(data.workspaceId).emit('cellAdded', data);
+      socket.to(data.workspaceId).emit('cellAdded', data);
   } catch (err) {
       console.error('Error añadiendo celdas en el proyecto:', err);
   }
@@ -476,7 +476,7 @@ socket.on('cellRemoved', async (data) => {
 
       await removeCells(projectJson, data.projectId, data.cellIds);
       console.log(`Celdas eliminadas del modelo: ${data.cellIds.join(', ')}`);
-      io.to(data.workspaceId).emit('cellRemoved', data);
+      socket.to(data.workspaceId).emit('cellRemoved', data);
   } catch (err) {
       console.error('Error eliminando celdas en el proyecto:', err);
   }
@@ -501,7 +501,7 @@ socket.on('cellConnected', async (data) => {
 
       await connectCells(projectJson, data.projectId, data.modelId, connection);
       console.log(`Celdas conectadas: ${data.sourceId} -> ${data.targetId}`);
-      io.to(data.workspaceId).emit('cellConnected', data);
+      socket.to(data.workspaceId).emit('cellConnected', data);
   } catch (err) {
       console.error('Error conectando celdas en el proyecto:', err);
   }
@@ -520,7 +520,7 @@ socket.on('propertiesChanged', async (data) => {
 
       await changeCellProperties(projectJson, data.projectId, data.cellId, data.properties);
       console.log(`Propiedades actualizadas para la celda: ${data.cellId}`);
-      io.to(data.workspaceId).emit('propertiesChanged', data);
+      socket.to(data.workspaceId).emit('propertiesChanged', data);
   } catch (err) {
       console.error('Error cambiando propiedades de la celda en el proyecto:', err);
   }
@@ -539,7 +539,7 @@ socket.on('edgeStyleChanged', async (data) => {
 
       await changeEdgeStyle(projectJson, data.projectId, data.edgeId, data.newStyle);
       console.log(`Estilo del borde actualizado: ${data.edgeId}`);
-      io.to(data.workspaceId).emit('edgeStyleChanged', data);
+      socket.to(data.workspaceId).emit('edgeStyleChanged', data);
   } catch (err) {
       console.error('Error cambiando estilo del borde en el proyecto:', err);
   }
@@ -558,7 +558,7 @@ socket.on('edgeLabelChanged', async (data) => {
 
       await changeEdgeLabel(projectJson, data.projectId, data.edgeId, data.label);
       console.log(`Etiqueta del borde actualizada: ${data.edgeId}`);
-      io.to(data.workspaceId).emit('edgeLabelChanged', data);
+      socket.to(data.workspaceId).emit('edgeLabelChanged', data);
   } catch (err) {
       console.error('Error cambiando etiqueta del borde en el proyecto:', err);
   }
